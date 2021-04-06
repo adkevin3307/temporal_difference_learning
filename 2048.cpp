@@ -76,29 +76,29 @@ public:
     }
 
     /**
-	 * get a 16-bit row
-	 */
+     * get a 16-bit row
+     */
     int fetch(int i) const
     {
         return ((raw >> (i << 4)) & 0xffff);
     }
     /**
-	 * set a 16-bit row
-	 */
+     * set a 16-bit row
+     */
     void place(int i, int r)
     {
         raw = (raw & ~(0xffffULL << (i << 4))) | (uint64_t(r & 0xffff) << (i << 4));
     }
     /**
-	 * get a 4-bit tile
-	 */
+     * get a 4-bit tile
+     */
     int at(int i) const
     {
         return (raw >> (i << 2)) & 0x0f;
     }
     /**
-	 * set a 4-bit tile
-	 */
+     * set a 4-bit tile
+     */
     void set(int i, int t)
     {
         raw = (raw & ~(0x0fULL << (i << 2))) | (uint64_t(t & 0x0f) << (i << 2));
@@ -137,8 +137,8 @@ public:
 
 private:
     /**
-	 * the lookup table for moving board
-	 */
+     * the lookup table for moving board
+     */
     struct lookup {
         int raw; // base row (16-bit raw)
         int left; // left operation
@@ -218,8 +218,8 @@ private:
 
 public:
     /**
-	 * reset to initial state (2 random tile on board)
-	 */
+     * reset to initial state (2 random tile on board)
+     */
     void init()
     {
         raw = 0;
@@ -228,10 +228,10 @@ public:
     }
 
     /**
-	 * add a new random tile on board, or do nothing if the board is full
-	 * 2-tile: 90%
-	 * 4-tile: 10%
-	 */
+     * add a new random tile on board, or do nothing if the board is full
+     * 2-tile: 90%
+     * 4-tile: 10%
+     */
     void popup()
     {
         int space[16], num = 0;
@@ -244,9 +244,9 @@ public:
     }
 
     /**
-	 * apply an action to the board
-	 * return the reward gained by the action, or -1 if the action is illegal
-	 */
+     * apply an action to the board
+     * return the reward gained by the action, or -1 if the action is illegal
+     */
     int move(int opcode)
     {
         switch (opcode) {
@@ -306,14 +306,14 @@ public:
     }
 
     /**
-	 * swap row and column
-	 * +------------------------+       +------------------------+
-	 * |     2     8   128     4|       |     2     8     2     4|
-	 * |     8    32    64   256|       |     8    32     4     2|
-	 * |     2     4    32   128| ----> |   128    64    32     8|
-	 * |     4     2     8    16|       |     4   256   128    16|
-	 * +------------------------+       +------------------------+
-	 */
+     * swap row and column
+     * +------------------------+       +------------------------+
+     * |     2     8   128     4|       |     2     8     2     4|
+     * |     8    32    64   256|       |     8    32     4     2|
+     * |     2     4    32   128| ----> |   128    64    32     8|
+     * |     4     2     8    16|       |     4   256   128    16|
+     * +------------------------+       +------------------------+
+     */
     void transpose()
     {
         raw = (raw & 0xf0f00f0ff0f00f0fULL) | ((raw & 0x0000f0f00000f0f0ULL) << 12) | ((raw & 0x0f0f00000f0f0000ULL) >> 12);
@@ -321,36 +321,36 @@ public:
     }
 
     /**
-	 * horizontal reflection
-	 * +------------------------+       +------------------------+
-	 * |     2     8   128     4|       |     4   128     8     2|
-	 * |     8    32    64   256|       |   256    64    32     8|
-	 * |     2     4    32   128| ----> |   128    32     4     2|
-	 * |     4     2     8    16|       |    16     8     2     4|
-	 * +------------------------+       +------------------------+
-	 */
+     * horizontal reflection
+     * +------------------------+       +------------------------+
+     * |     2     8   128     4|       |     4   128     8     2|
+     * |     8    32    64   256|       |   256    64    32     8|
+     * |     2     4    32   128| ----> |   128    32     4     2|
+     * |     4     2     8    16|       |    16     8     2     4|
+     * +------------------------+       +------------------------+
+     */
     void mirror()
     {
         raw = ((raw & 0x000f000f000f000fULL) << 12) | ((raw & 0x00f000f000f000f0ULL) << 4) | ((raw & 0x0f000f000f000f00ULL) >> 4) | ((raw & 0xf000f000f000f000ULL) >> 12);
     }
 
     /**
-	 * vertical reflection
-	 * +------------------------+       +------------------------+
-	 * |     2     8   128     4|       |     4     2     8    16|
-	 * |     8    32    64   256|       |     2     4    32   128|
-	 * |     2     4    32   128| ----> |     8    32    64   256|
-	 * |     4     2     8    16|       |     2     8   128     4|
-	 * +------------------------+       +------------------------+
-	 */
+     * vertical reflection
+     * +------------------------+       +------------------------+
+     * |     2     8   128     4|       |     4     2     8    16|
+     * |     8    32    64   256|       |     2     4    32   128|
+     * |     2     4    32   128| ----> |     8    32    64   256|
+     * |     4     2     8    16|       |     2     8   128     4|
+     * +------------------------+       +------------------------+
+     */
     void flip()
     {
         raw = ((raw & 0x000000000000ffffULL) << 48) | ((raw & 0x00000000ffff0000ULL) << 16) | ((raw & 0x0000ffff00000000ULL) >> 16) | ((raw & 0xffff000000000000ULL) >> 48);
     }
 
     /**
-	 * rotate the board clockwise by given times
-	 */
+     * rotate the board clockwise by given times
+     */
     void rotate(int r = 1)
     {
         switch (((r % 4) + 4) % 4) {
@@ -449,22 +449,22 @@ public:
 
 public: // should be implemented
     /**
-	 * estimate the value of a given board
-	 */
+     * estimate the value of a given board
+     */
     virtual float estimate(const board& b) const = 0;
     /**
-	 * update the value of a given board, and return its updated value
-	 */
+     * update the value of a given board, and return its updated value
+     */
     virtual float update(const board& b, float u) = 0;
     /**
-	 * get the name of this feature
-	 */
+     * get the name of this feature
+     */
     virtual std::string name() const = 0;
 
 public:
     /**
-	 * dump the detail of weight table of a given board
-	 */
+     * dump the detail of weight table of a given board
+     */
     virtual void dump(const board& b, std::ostream& out = info) const
     {
         out << b << "estimate = " << estimate(b) << std::endl;
@@ -556,23 +556,23 @@ public:
         }
 
         /**
-		 * isomorphic patterns can be calculated by board
-		 *
-		 * take pattern { 0, 1, 2, 3 } as an example
-		 * apply the pattern to the original board (left), we will get 0x1372
-		 * if we apply the pattern to the clockwise rotated board (right), we will get 0x2131,
-		 * which is the same as applying pattern { 12, 8, 4, 0 } to the original board
-		 * { 0, 1, 2, 3 } and { 12, 8, 4, 0 } are isomorphic patterns
-		 * +------------------------+       +------------------------+
-		 * |     2     8   128     4|       |     4     2     8     2|
-		 * |     8    32    64   256|       |     2     4    32     8|
-		 * |     2     4    32   128| ----> |     8    32    64   128|
-		 * |     4     2     8    16|       |    16   128   256     4|
-		 * +------------------------+       +------------------------+
-		 *
-		 * therefore if we make a board whose value is 0xfedcba9876543210ull (the same as index)
-		 * we would be able to use the above method to calculate its 8 isomorphisms
-		 */
+         * isomorphic patterns can be calculated by board
+         *
+         * take pattern { 0, 1, 2, 3 } as an example
+         * apply the pattern to the original board (left), we will get 0x1372
+         * if we apply the pattern to the clockwise rotated board (right), we will get 0x2131,
+         * which is the same as applying pattern { 12, 8, 4, 0 } to the original board
+         * { 0, 1, 2, 3 } and { 12, 8, 4, 0 } are isomorphic patterns
+         * +------------------------+       +------------------------+
+         * |     2     8   128     4|       |     4     2     8     2|
+         * |     8    32    64   256|       |     2     4    32     8|
+         * |     2     4    32   128| ----> |     8    32    64   128|
+         * |     4     2     8    16|       |    16   128   256     4|
+         * +------------------------+       +------------------------+
+         *
+         * therefore if we make a board whose value is 0xfedcba9876543210ull (the same as index)
+         * we would be able to use the above method to calculate its 8 isomorphisms
+         */
         for (int i = 0; i < 8; i++) {
             board idx = 0xfedcba9876543210ull;
             if (i >= 4) idx.mirror();
@@ -592,8 +592,8 @@ public:
 
 public:
     /**
-	 * estimate the value of a given board
-	 */
+     * estimate the value of a given board
+     */
     virtual float estimate(const board& b) const
     {
         // TODO
@@ -608,8 +608,8 @@ public:
     }
 
     /**
-	 * update the value of a given board, and return its updated value
-	 */
+     * update the value of a given board, and return its updated value
+     */
     virtual float update(const board& b, float u)
     {
         // TODO
@@ -626,8 +626,8 @@ public:
     }
 
     /**
-	 * get the name of this feature
-	 */
+     * get the name of this feature
+     */
     virtual std::string name() const
     {
         return std::to_string(isomorphic[0].size()) + "-tuple pattern " + nameof(isomorphic[0]);
@@ -635,19 +635,19 @@ public:
 
 public:
     /*
-	 * set the isomorphic level of this pattern
-	 * 1: no isomorphic
-	 * 4: enable rotation
-	 * 8: enable rotation and reflection
-	 */
+     * set the isomorphic level of this pattern
+     * 1: no isomorphic
+     * 4: enable rotation
+     * 8: enable rotation and reflection
+     */
     void set_isomorphic(int i = 8)
     {
         iso_last = i;
     }
 
     /**
-	 * display the weight information of a given board
-	 */
+     * display the weight information of a given board
+     */
     void dump(const board& b, std::ostream& out = info) const
     {
         for (int i = 0; i < iso_last; i++) {
@@ -788,9 +788,9 @@ public:
 
 public:
     /**
-	 * assign a state (before state), then apply the action (defined in opcode)
-	 * return true if the action is valid for the given state
-	 */
+     * assign a state (before state), then apply the action (defined in opcode)
+     * return true if the action is valid for the given state
+     */
     bool assign(const board& b)
     {
         debug << "assign " << name() << '\n';
@@ -802,12 +802,12 @@ public:
     }
 
     /**
-	 * call this function after initialization (assign, set_value, etc)
-	 *
-	 * the state is invalid if
-	 *  estimated value becomes to NaN (wrong learning rate?)
-	 *  invalid action (cause after == before or score == -1)
-	 */
+     * call this function after initialization (assign, set_value, etc)
+     *
+     * the state is invalid if
+     *  estimated value becomes to NaN (wrong learning rate?)
+     *  invalid action (cause after == before or score == -1)
+     */
     bool is_valid() const
     {
         if (std::isnan(esti)) {
@@ -856,11 +856,11 @@ public:
     }
 
     /**
-	 * add a feature into tuple networks
-	 *
-	 * note that feats is std::vector<feature*>,
-	 * therefore you need to keep all the instances somewhere
-	 */
+     * add a feature into tuple networks
+     *
+     * note that feats is std::vector<feature*>,
+     * therefore you need to keep all the instances somewhere
+     */
     void add_feature(feature* feat)
     {
         feats.push_back(feat);
@@ -880,8 +880,8 @@ public:
     }
 
     /**
-	 * accumulate the total value of given state
-	 */
+     * accumulate the total value of given state
+     */
     float estimate(const board& b) const
     {
         debug << "estimate " << '\n';
@@ -894,8 +894,8 @@ public:
     }
 
     /**
-	 * update the value of given state and return its new value
-	 */
+     * update the value of given state and return its new value
+     */
     float update(const board& b, float u) const
     {
         debug << "update (" << u << ")" << '\n';
@@ -909,17 +909,17 @@ public:
     }
 
     /**
-	 * select a best move of a before state b
-	 *
-	 * return should be a state whose
-	 *  before_state() is b
-	 *  after_state() is b's best successor (after state)
-	 *  action() is the best action
-	 *  reward() is the reward of performing action()
-	 *  value() is the estimated value of after_state()
-	 *
-	 * you may simply return state() if no valid move
-	 */
+     * select a best move of a before state b
+     *
+     * return should be a state whose
+     *  before_state() is b
+     *  after_state() is b's best successor (after state)
+     *  action() is the best action
+     *  reward() is the reward of performing action()
+     *  value() is the estimated value of after_state()
+     *
+     * you may simply return state() if no valid move
+     */
     state select_best_move(const board& b) const
     {
         state after[4] = { 0, 1, 2, 3 }; // up, right, down, left
@@ -942,19 +942,19 @@ public:
     }
 
     /**
-	 * update the tuple network by an episode
-	 *
-	 * path is the sequence of states in this episode,
-	 * the last entry in path (path.back()) is the final state
-	 *
-	 * for example, a 2048 games consists of
-	 *  (initial) s0 --(a0,r0)--> s0' --(popup)--> s1 --(a1,r1)--> s1' --(popup)--> s2 (terminal)
-	 *  where sx is before state, sx' is after state
-	 *
-	 * its path would be
-	 *  { (s0,s0',a0,r0), (s1,s1',a1,r1), (s2,s2,x,-1) }
-	 *  where (x,x,x,x) means (before state, after state, action, reward)
-	 */
+     * update the tuple network by an episode
+     *
+     * path is the sequence of states in this episode,
+     * the last entry in path (path.back()) is the final state
+     *
+     * for example, a 2048 games consists of
+     *  (initial) s0 --(a0,r0)--> s0' --(popup)--> s1 --(a1,r1)--> s1' --(popup)--> s2 (terminal)
+     *  where sx is before state, sx' is after state
+     *
+     * its path would be
+     *  { (s0,s0',a0,r0), (s1,s1',a1,r1), (s2,s2,x,-1) }
+     *  where (x,x,x,x) means (before state, after state, action, reward)
+     */
     void update_episode(std::vector<state>& path, float alpha = 0.1) const
     {
         // TODO
@@ -971,24 +971,24 @@ public:
     }
 
     /**
-	 * update the statistic, and display the status once in 1000 episodes by default
-	 *
-	 * the format would be
-	 * 1000   mean = 273901  max = 382324
-	 *        512     100%   (0.3%)
-	 *        1024    99.7%  (0.2%)
-	 *        2048    99.5%  (1.1%)
-	 *        4096    98.4%  (4.7%)
-	 *        8192    93.7%  (22.4%)
-	 *        16384   71.3%  (71.3%)
-	 *
-	 * where (let unit = 1000)
-	 *  '1000': current iteration (games trained)
-	 *  'mean = 273901': the average score of last 1000 games is 273901
-	 *  'max = 382324': the maximum score of last 1000 games is 382324
-	 *  '93.7%': 93.7% (937 games) reached 8192-tiles in last 1000 games (a.k.a. win rate of 8192-tile)
-	 *  '22.4%': 22.4% (224 games) terminated with 8192-tiles (the largest) in last 1000 games
-	 */
+     * update the statistic, and display the status once in 1000 episodes by default
+     *
+     * the format would be
+     * 1000   mean = 273901  max = 382324
+     *        512     100%   (0.3%)
+     *        1024    99.7%  (0.2%)
+     *        2048    99.5%  (1.1%)
+     *        4096    98.4%  (4.7%)
+     *        8192    93.7%  (22.4%)
+     *        16384   71.3%  (71.3%)
+     *
+     * where (let unit = 1000)
+     *  '1000': current iteration (games trained)
+     *  'mean = 273901': the average score of last 1000 games is 273901
+     *  'max = 382324': the maximum score of last 1000 games is 382324
+     *  '93.7%': 93.7% (937 games) reached 8192-tiles in last 1000 games (a.k.a. win rate of 8192-tile)
+     *  '22.4%': 22.4% (224 games) terminated with 8192-tiles (the largest) in last 1000 games
+     */
     void make_statistic(size_t n, const board& b, int score, int unit = 1000)
     {
         scores.push_back(score);
@@ -1010,14 +1010,12 @@ public:
             }
             float mean = float(sum) / unit;
             float coef = 100.0 / unit;
+
             info << n;
-            info << "\t"
-                    "mean = "
-                 << mean;
-            info << "\t"
-                    "max = "
-                 << max;
+            info << "\tmean = " << mean;
+            info << "\tmax = " << max;
             info << std::endl;
+
             for (int t = 1, c = 0; c < unit; c += stat[t++]) {
                 if (stat[t] == 0) continue;
                 int accu = std::accumulate(stat + t, stat + 16, 0);
@@ -1030,8 +1028,8 @@ public:
     }
 
     /**
-	 * display the weight information of a given board
-	 */
+     * display the weight information of a given board
+     */
     void dump(const board& b, std::ostream& out = info) const
     {
         out << b << "estimate = " << estimate(b) << std::endl;
@@ -1042,9 +1040,9 @@ public:
     }
 
     /**
-	 * load the weight table from binary file
-	 * you need to define all the features (add_feature(...)) before call this function
-	 */
+     * load the weight table from binary file
+     * you need to define all the features (add_feature(...)) before call this function
+     */
     void load(const std::string& path)
     {
         std::ifstream in;
@@ -1065,8 +1063,8 @@ public:
     }
 
     /**
-	 * save the weight table to binary file
-	 */
+     * save the weight table to binary file
+     */
     void save(const std::string& path)
     {
         std::ofstream out;
