@@ -4,11 +4,15 @@ OBJ_DIR = obj
 SOURCES = $(wildcard *.cpp)
 OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 
-CXXFLAGS = -std=c++0x -Wall -O3 -g
+CXXFLAGS = -std=c++17 -Wall -O3 -I./include -g
 
 LIBS =
 
-all: create_object_directory $(EXE)
+ifeq ($(findstring debug, $(MAKECMDGOALS)), debug)
+	CXXFLAGS += -DDEBUG
+endif
+
+all debug: create_object_directory $(EXE)
 	@echo Compile Success
 
 create_object_directory:

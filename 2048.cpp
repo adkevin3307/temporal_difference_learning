@@ -27,14 +27,20 @@
 #include <fstream>
 #include <cmath>
 
+#include "argparse/argparse.hpp"
+
 /**
  * output streams
  * to enable debugging (more output), just change the line to 'std::ostream& debug = std::cout;'
  */
 std::ostream& info = std::cout;
 std::ostream& error = std::cerr;
-std::ostream& debug = *(new std::ofstream);
 
+#ifdef DEBUG
+std::ostream& debug = std::cout;
+#else
+std::ostream& debug = *(new std::ofstream);
+#endif
 /**
  * 64-bit bitboard implementation for 2048
  *
@@ -787,8 +793,8 @@ public:
 	 */
     bool assign(const board& b)
     {
-        debug << "assign " << name() << std::endl
-              << b;
+        debug << "assign " << name() << '\n';
+        debug << b;
         after = before = b;
         score = after.move(opcode);
         esti = score;
@@ -878,8 +884,8 @@ public:
 	 */
     float estimate(const board& b) const
     {
-        debug << "estimate " << std::endl
-              << b;
+        debug << "estimate " << '\n';
+        debug << b;
         float value = 0;
         for (feature* feat : feats) {
             value += feat->estimate(b);
@@ -892,9 +898,8 @@ public:
 	 */
     float update(const board& b, float u) const
     {
-        debug << "update "
-              << " (" << u << ")" << std::endl
-              << b;
+        debug << "update (" << u << ")" << '\n';
+        debug << b;
         float u_split = u / feats.size();
         float value = 0;
         for (feature* feat : feats) {
@@ -958,7 +963,8 @@ public:
             state& move = path.back();
             float error = exact - (move.value() - move.reward());
 
-            debug << "update error = " << error << " for after state" << std::endl << move.after_state();
+            debug << "update error = " << error << " for after state" << '\n';
+            debug << move.after_state();
 
             exact = move.reward() + update(move.after_state(), alpha * error);
         }
@@ -1085,15 +1091,32 @@ private:
 
 int main(int argc, const char* argv[])
 {
+    argparse::ArgumentParser parser("2048");
+    parser.add_argument("-e", "--epochs")
+        .default_value(100000)
+        .action([](const std::string& value) {
+            std::stringstream ss;
+            ss << value;
+
+            size_t result;
+            ss >> result;
+
+            return result;
+        });
+    parser.parse_args(argc, argv);
+
     info << "TDL2048-Demo" << std::endl;
     learning tdl;
 
     // set the learning parameters
     float alpha = 0.1;
-    size_t total = 100000;
+    size_t total = parser.get<size_t>("--epochs");
     unsigned seed;
-    __asm__ __volatile__("rdtsc"
-                         : "=a"(seed));
+
+    __asm__ __volatile__(
+        "rdtsc"
+        : "=a"(seed));
+
     info << "alpha = " << alpha << std::endl;
     info << "total = " << total << std::endl;
     info << "seed = " << seed << std::endl;

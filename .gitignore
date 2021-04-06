@@ -1,2 +1,4 @@
+.cache/
 obj/
 2048
+compile_commands.json
