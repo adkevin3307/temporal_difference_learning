@@ -4,7 +4,7 @@ OBJ_DIR = obj
 SOURCES = $(wildcard *.cpp)
 OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 
-CXXFLAGS = -std=c++0x -O3 -g
+CXXFLAGS = -std=c++0x -Wall -O3 -g
 
 LIBS =
 
