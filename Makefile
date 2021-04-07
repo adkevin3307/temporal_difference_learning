@@ -1,5 +1,6 @@
 EXE = 2048
 OBJ_DIR = obj
+TRASH = .cache
 
 SOURCES = $(wildcard *.cpp)
 OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
@@ -25,4 +26,4 @@ $(EXE): $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
 clean:
-	rm -rf $(EXE) $(OBJ_DIR)
+	rm -rf $(EXE) $(OBJ_DIR) $(TRASH)
