@@ -1140,8 +1140,8 @@ int main(int argc, const char* argv[])
         debug << "begin episode" << std::endl;
         b.init();
         while (true) {
-            debug << "state" << std::endl
-                  << b;
+            debug << "state" << '\n';
+            debug << b;
             state best = tdl.select_best_move(b);
             path.push_back(best);
 
