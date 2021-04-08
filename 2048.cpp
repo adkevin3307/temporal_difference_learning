@@ -26,6 +26,7 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <ctime>
 
 #include "argparse/argparse.hpp"
 
@@ -41,6 +42,9 @@ std::ostream& debug = std::cout;
 #else
 std::ostream& debug = *(new std::ofstream);
 #endif
+
+int STATE = 0; // 0 => before, 1 => after
+
 /**
  * 64-bit bitboard implementation for 2048
  *
@@ -241,6 +245,31 @@ public:
             }
         if (num)
             set(space[rand() % num], rand() % 10 ? 1 : 2);
+    }
+
+    std::vector<board> allpopup()
+    {
+        std::vector<board> boards;
+
+        int space[16], num = 0;
+        for (int i = 0; i < 16; i++) {
+            if (at(i) == 0) {
+                space[num++] = 1;
+            }
+        }
+
+        for (int i = 0; i < 16; i++) {
+            if (space[i]) {
+                for (int j = 0; j < 10; j++) {
+                    board temp(this->raw);
+                    temp.set(i, j == 9 ? 2 : 1);
+
+                    boards.push_back(temp);
+                }
+            }
+        }
+
+        return boards;
     }
 
     /**
@@ -927,10 +956,34 @@ public:
         for (state* move = after; move != after + 4; move++) {
             if (move->assign(b)) {
                 // TODO
-                move->set_value(move->reward() + estimate(move->after_state()));
+                switch (STATE) {
+                    case 0: { // before
+                        float value = 0.0;
+                        std::vector<board> boards = move->after_state().allpopup();
 
-                if (move->value() > best->value())
+                        for (auto _board : boards) {
+                            value += estimate(_board);
+                        }
+
+                        if (boards.size() != 0) {
+                            value /= boards.size();
+                        }
+
+                        move->set_value(move->reward() + value);
+
+                        break;
+                    }
+                    case 1: // after
+                        move->set_value(move->reward() + estimate(move->after_state()));
+
+                        break;
+                    default:
+                        break;
+                }
+
+                if (move->value() > best->value()) {
                     best = move;
+                }
             }
             else {
                 move->set_value(-std::numeric_limits<float>::max());
@@ -961,12 +1014,31 @@ public:
         float exact = 0;
         for (path.pop_back(); path.size(); path.pop_back()) {
             state& move = path.back();
-            float error = exact - (move.value() - move.reward());
 
-            debug << "update error = " << error << " for after state" << '\n';
-            debug << move.after_state();
+            switch (STATE) {
+                case 0: { // before
+                    float error = move.reward() + exact - estimate(move.before_state());
 
-            exact = move.reward() + update(move.after_state(), alpha * error);
+                    debug << "update error = " << error << " for before state" << '\n';
+                    debug << move.before_state();
+
+                    exact = move.reward() + update(move.before_state(), alpha * error);
+
+                    break;
+                }
+                case 1: { // after
+                    float error = exact - (move.value() - move.reward());
+
+                    debug << "update error = " << error << " for after state" << '\n';
+                    debug << move.after_state();
+
+                    exact = move.reward() + update(move.after_state(), alpha * error);
+
+                    break;
+                }
+                default:
+                    break;
+            }
         }
     }
 
@@ -993,6 +1065,8 @@ public:
     {
         scores.push_back(score);
         maxtile.push_back(0);
+        this->times.push_back(time(NULL));
+
         for (int i = 0; i < 16; i++) {
             maxtile.back() = std::max(maxtile.back(), b.at(i));
         }
@@ -1010,10 +1084,12 @@ public:
             }
             float mean = float(sum) / unit;
             float coef = 100.0 / unit;
+            time_t time = this->times.back() - this->times.front();
 
             info << n;
             info << "\tmean = " << mean;
             info << "\tmax = " << max;
+            info << "\ttime = " << time;
             info << std::endl;
 
             for (int t = 1, c = 0; c < unit; c += stat[t++]) {
@@ -1022,8 +1098,10 @@ public:
                 info << "\t" << ((1 << t) & -2u) << "\t" << (accu * coef) << "%";
                 info << "\t(" << (stat[t] * coef) << "%)" << std::endl;
             }
+
             scores.clear();
             maxtile.clear();
+            this->times.clear();
         }
     }
 
@@ -1085,13 +1163,13 @@ private:
     std::vector<feature*> feats;
     std::vector<int> scores;
     std::vector<int> maxtile;
+    std::vector<time_t> times;
 };
 
 int main(int argc, const char* argv[])
 {
     argparse::ArgumentParser parser("2048");
     parser.add_argument("-e", "--epochs")
-        .default_value(100000)
         .action([](const std::string& value) {
             std::stringstream ss;
             ss << value;
@@ -1101,20 +1179,28 @@ int main(int argc, const char* argv[])
 
             return result;
         });
+    parser.add_argument("-s", "--state");
     parser.parse_args(argc, argv);
 
+    if (parser.get<std::string>("--state") == "before") {
+        STATE = 0;
+    }
+    if (parser.get<std::string>("--state") == "after") {
+        STATE = 1;
+    }
+
     info << "TDL2048-Demo" << std::endl;
+
     learning tdl;
 
     // set the learning parameters
     float alpha = 0.1;
     size_t total = parser.get<size_t>("--epochs");
-    unsigned seed;
+    unsigned seed = 0;
 
-    __asm__ __volatile__(
-        "rdtsc"
-        : "=a"(seed));
+    // __asm__ __volatile__("rdtsc" : "=a"(seed));
 
+    info << "state = " << parser.get<std::string>("--state") << " (" << STATE << ")" << '\n';
     info << "alpha = " << alpha << std::endl;
     info << "total = " << total << std::endl;
     info << "seed = " << seed << std::endl;
@@ -1132,6 +1218,10 @@ int main(int argc, const char* argv[])
     // train the model
     std::vector<state> path;
     path.reserve(20000);
+
+    std::vector<int> history;
+    history.reserve(total);
+
     for (size_t n = 1; n <= total; n++) {
         board b;
         int score = 0;
@@ -1157,6 +1247,10 @@ int main(int argc, const char* argv[])
         }
         debug << "end episode" << std::endl;
 
+        history.push_back(score);
+
+        debug << "path size: " << path.size() << '\n';
+
         // update by TD(0)
         tdl.update_episode(path, alpha);
         tdl.make_statistic(n, b, score);
@@ -1165,6 +1259,15 @@ int main(int argc, const char* argv[])
 
     // store the model into file
     tdl.save("");
+
+    std::fstream file;
+    file.open(std::string("score_") + std::string(STATE ? "after" : "before") + std::string(".txt"), std::ios::out | std::ios::trunc);
+
+    for (size_t i = 0; i < history.size(); i++) {
+        file << history[i] << (i == history.size() - 1 ? '\n' : ' ');
+    }
+
+    file.close();
 
     return 0;
 }
