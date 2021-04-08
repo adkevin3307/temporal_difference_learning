@@ -254,18 +254,16 @@ public:
         int space[16], num = 0;
         for (int i = 0; i < 16; i++) {
             if (at(i) == 0) {
-                space[num++] = 1;
+                space[num++] = i;
             }
         }
 
-        for (int i = 0; i < 16; i++) {
-            if (space[i]) {
-                for (int j = 0; j < 10; j++) {
-                    board temp(this->raw);
-                    temp.set(i, j == 9 ? 2 : 1);
+        for (int i = 0; i < num; i++) {
+            for (int j = 0; j < 10; j++) {
+                board temp(this->raw);
+                temp.set(space[i], j == 9 ? 2 : 1);
 
-                    boards.push_back(temp);
-                }
+                boards.push_back(temp);
             }
         }
 
@@ -625,7 +623,7 @@ public:
      */
     virtual float estimate(const board& b) const
     {
-        // TODO
+        // TODO estimate
         float value = 0.0;
 
         for (int i = 0; i < iso_last; i++) {
@@ -641,7 +639,7 @@ public:
      */
     virtual float update(const board& b, float u)
     {
-        // TODO
+        // TODO update
         float u_split = u / iso_last;
         float value = 0.0;
 
@@ -692,7 +690,7 @@ public:
 protected:
     size_t indexof(const std::vector<int>& patt, const board& b) const
     {
-        // TODO
+        // TODO indexof
         size_t index = 0;
         for (size_t i = 0; i < patt.size(); i++) {
             index |= (b.at(patt[i]) << (4 * i));
@@ -955,7 +953,7 @@ public:
         state* best = after;
         for (state* move = after; move != after + 4; move++) {
             if (move->assign(b)) {
-                // TODO
+                // TODO select best move
                 switch (STATE) {
                     case 0: { // before
                         float value = 0.0;
@@ -1010,7 +1008,7 @@ public:
      */
     void update_episode(std::vector<state>& path, float alpha = 0.1) const
     {
-        // TODO
+        // TODO update episode
         float exact = 0;
         for (path.pop_back(); path.size(); path.pop_back()) {
             state& move = path.back();
