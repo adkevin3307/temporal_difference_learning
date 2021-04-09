@@ -1259,7 +1259,7 @@ int main(int argc, const char* argv[])
     tdl.save("");
 
     std::fstream file;
-    file.open(std::string("score_") + std::string(STATE ? "after" : "before") + std::string(".txt"), std::ios::out | std::ios::trunc);
+    file.open(std::string("score_") + std::string(STATE ? "after_" : "before_") + std::to_string(total) + std::string(".txt"), std::ios::out | std::ios::trunc);
 
     for (size_t i = 0; i < history.size(); i++) {
         file << history[i] << (i == history.size() - 1 ? '\n' : ' ');
