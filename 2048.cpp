@@ -27,8 +27,8 @@
 #include <fstream>
 #include <cmath>
 #include <ctime>
-
-#include "argparse/argparse.hpp"
+#include <map>
+#include <unistd.h>
 
 /**
  * output streams
@@ -1164,28 +1164,52 @@ private:
     std::vector<time_t> times;
 };
 
-int main(int argc, const char* argv[])
+std::map<std::string, std::string> parse(int argc, char** argv)
 {
-    argparse::ArgumentParser parser("2048");
-    parser.add_argument("-e", "--epochs")
-        .action([](const std::string& value) {
-            std::stringstream ss;
-            ss << value;
+    int opt = 0;
+    std::map<std::string, std::string> args;
 
-            size_t result;
-            ss >> result;
+    args["epochs"] = "100000";
+    args["state"] = "before";
 
-            return result;
-        });
-    parser.add_argument("-s", "--state");
-    parser.parse_args(argc, argv);
+    while (true) {
+        opt = getopt(argc, argv, "e:s:");
 
-    if (parser.get<std::string>("--state") == "before") {
+        if (opt == -1) break;
+
+        switch (opt) {
+            case 'e':
+                args["epochs"] = optarg;
+
+                break;
+            case 's':
+                args["state"] = optarg;
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    return args;
+}
+
+int main(int argc, char** argv)
+{
+    std::map<std::string, std::string> args = parse(argc, argv);
+
+    if (args.find("state") == args.end()) {
+        throw std::runtime_error("state not found");
+    }
+    else if (args["state"] == "before") {
         STATE = 0;
     }
-    if (parser.get<std::string>("--state") == "after") {
+    else if (args["state"] == "after") {
         STATE = 1;
     }
+
+    std::stringstream ss;
+    ss << args["epochs"];
 
     info << "TDL2048-Demo" << std::endl;
 
@@ -1193,12 +1217,13 @@ int main(int argc, const char* argv[])
 
     // set the learning parameters
     float alpha = 0.1;
-    size_t total = parser.get<size_t>("--epochs");
+    size_t total = 0;
     unsigned seed = 0;
 
-    // __asm__ __volatile__("rdtsc" : "=a"(seed));
+    ss >> total;
+    __asm__ __volatile__("rdtsc" : "=a"(seed));
 
-    info << "state = " << parser.get<std::string>("--state") << " (" << STATE << ")" << '\n';
+    info << "state = " << args["state"] << " (" << STATE << ")" << '\n';
     info << "alpha = " << alpha << std::endl;
     info << "total = " << total << std::endl;
     info << "seed = " << seed << std::endl;

@@ -5,7 +5,7 @@ TRASH = .cache
 SOURCES = $(wildcard *.cpp)
 OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 
-CXXFLAGS = -std=c++17 -Wall -O3 -I./include -g
+CXXFLAGS = -std=c++11 -Wall -O3 -g
 
 LIBS =
 
