@@ -1221,13 +1221,14 @@ int main(int argc, char** argv)
     unsigned seed = 0;
 
     ss >> total;
+
     __asm__ __volatile__("rdtsc" : "=a"(seed));
+    std::srand(seed);
 
     info << "state = " << args["state"] << " (" << STATE << ")" << '\n';
     info << "alpha = " << alpha << std::endl;
     info << "total = " << total << std::endl;
     info << "seed = " << seed << std::endl;
-    std::srand(seed);
 
     // initialize the features
     tdl.add_feature(new pattern({ 0, 1, 2, 3, 4, 5 }));
@@ -1236,7 +1237,7 @@ int main(int argc, char** argv)
     tdl.add_feature(new pattern({ 4, 5, 6, 8, 9, 10 }));
 
     // restore the model from file
-    tdl.load("");
+    tdl.load("model.weight");
 
     // train the model
     std::vector<state> path;
@@ -1281,7 +1282,7 @@ int main(int argc, char** argv)
     }
 
     // store the model into file
-    tdl.save("");
+    tdl.save("model.weight");
 
     std::fstream file;
     file.open(std::string("score_") + std::string(STATE ? "after_" : "before_") + std::to_string(total) + std::string(".txt"), std::ios::out | std::ios::trunc);
