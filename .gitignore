@@ -1,5 +1,7 @@
 .cache/
 obj/
+score/
+weight/
 2048
 compile_commands.json
 score_*.txt
