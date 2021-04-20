@@ -1171,9 +1171,12 @@ std::map<std::string, std::string> parse(int argc, char** argv)
 
     args["epochs"] = "100000";
     args["state"] = "before";
+    args["load"] = "";
+    args["store"] = "";
+    args["history"] = "";
 
     while (true) {
-        opt = getopt(argc, argv, "e:s:");
+        opt = getopt(argc, argv, "e:s:i:o:h:");
 
         if (opt == -1) break;
 
@@ -1184,6 +1187,18 @@ std::map<std::string, std::string> parse(int argc, char** argv)
                 break;
             case 's':
                 args["state"] = optarg;
+
+                break;
+            case 'i':
+                args["load"] = optarg;
+
+                break;
+            case 'o':
+                args["store"] = optarg;
+
+                break;
+            case 'h':
+                args["history"] = optarg;
 
                 break;
             default:
@@ -1237,7 +1252,7 @@ int main(int argc, char** argv)
     tdl.add_feature(new pattern({ 4, 5, 6, 8, 9, 10 }));
 
     // restore the model from file
-    tdl.load("model.weight");
+    tdl.load(args["load"]);
 
     // train the model
     std::vector<state> path;
@@ -1282,16 +1297,20 @@ int main(int argc, char** argv)
     }
 
     // store the model into file
-    tdl.save("model.weight");
+    tdl.save(args["store"]);
 
-    std::fstream file;
-    file.open(std::string("score_") + std::string(STATE ? "after_" : "before_") + std::to_string(total) + std::string(".txt"), std::ios::out | std::ios::trunc);
+    if (args["history"].length() != 0) {
+        info << "store history in " << args["history"] << '\n';
 
-    for (size_t i = 0; i < history.size(); i++) {
-        file << history[i] << (i == history.size() - 1 ? '\n' : ' ');
+        std::fstream file;
+        file.open(args["history"], std::ios::out | std::ios::trunc);
+
+        for (size_t i = 0; i < history.size(); i++) {
+            file << history[i] << (i == history.size() - 1 ? '\n' : ' ');
+        }
+
+        file.close();
     }
-
-    file.close();
 
     return 0;
 }
